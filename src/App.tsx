@@ -3,7 +3,7 @@ import Icon from '@/components/ui/icon';
 
 const LOGO_IMAGE = 'https://cdn.poehali.dev/projects/66de745b-c79f-4b40-917e-5a8c0a5d68f8/bucket/6acca560-ca3f-4cf3-ba11-040e5f73a55b.jpg';
 
-type Section = 'home' | 'matches' | 'tournaments' | 'standings' | 'teams' | 'players' | 'news' | 'about' | 'contact';
+type Section = 'home' | 'matches' | 'tournaments' | 'standings' | 'teams' | 'players' | 'streams' | 'news' | 'about' | 'contact';
 
 const NAV_ITEMS: { id: Section; label: string }[] = [
   { id: 'home', label: 'Главная' },
@@ -12,6 +12,7 @@ const NAV_ITEMS: { id: Section; label: string }[] = [
   { id: 'standings', label: 'Таблица' },
   { id: 'teams', label: 'Команды' },
   { id: 'players', label: 'Игроки' },
+  { id: 'streams', label: 'Трансляции' },
   { id: 'news', label: 'Новости' },
   { id: 'about', label: 'О нас' },
   { id: 'contact', label: 'Контакты' },
@@ -129,6 +130,44 @@ const PLAYERS = [
   { id: 6, name: 'Саша Морозов', age: 12, team: 'Стремительные', position: 'Защитник', goals: 3, assists: 14, games: 15, number: 5 },
   { id: 7, name: 'Илья Фёдоров', age: 11, team: 'Снежные Барсы', position: 'Вратарь', goals: 0, assists: 1, games: 12, number: 1 },
   { id: 8, name: 'Лёша Тихонов', age: 12, team: 'Белые Медведи', position: 'Защитник', goals: 5, assists: 9, games: 15, number: 4 },
+];
+
+const STREAMS = [
+  {
+    id: 1, status: 'live', title: 'Evolution Cup 2026 — Белые Медведи vs Стремительные',
+    match: 'Белые Медведи — Стремительные', tournament: 'Evolution Cup 2026', age: '2014 г.р.',
+    viewers: '1 240', channel: 'Evolution Hockey TV',
+    embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCxxxxxx',
+    youtubeUrl: 'https://www.youtube.com/@evolution-hockey',
+  },
+  {
+    id: 2, status: 'live', title: 'Evolution Cup 2026 — Снежные Барсы vs Динамо Юниор',
+    match: 'Снежные Барсы — Динамо Юниор', tournament: 'Evolution Cup 2026', age: '2015 г.р.',
+    viewers: '870', channel: 'HockeyKids Live',
+    embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCyyyyyy',
+    youtubeUrl: 'https://www.youtube.com/@hockeykids-live',
+  },
+  {
+    id: 3, status: 'upcoming', title: 'Северные Волки vs Красные Звёзды',
+    match: 'Северные Волки — Красные Звёзды', tournament: 'Evolution Cup 2026', age: '2013 г.р.',
+    viewers: '—', channel: 'Evolution Hockey TV', startTime: '15:00', date: 'Сегодня',
+    embedUrl: '',
+    youtubeUrl: 'https://www.youtube.com/@evolution-hockey',
+  },
+  {
+    id: 4, status: 'finished', title: 'Белые Медведи vs Снежные Барсы — запись',
+    match: 'Белые Медведи — Снежные Барсы', tournament: 'Evolution Cup 2026', age: '2014 г.р.',
+    viewers: '3 410', channel: 'Evolution Hockey TV', date: '21 мая 2026',
+    embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    youtubeUrl: 'https://www.youtube.com/@evolution-hockey',
+  },
+  {
+    id: 5, status: 'finished', title: 'Динамо Юниор vs Северные Волки — запись',
+    match: 'Динамо Юниор — Северные Волки', tournament: 'Evolution Cup 2026', age: '2015 г.р.',
+    viewers: '2 180', channel: 'HockeyKids Live', date: '20 мая 2026',
+    embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    youtubeUrl: 'https://www.youtube.com/@hockeykids-live',
+  },
 ];
 
 const NEWS = [
@@ -698,6 +737,168 @@ function PlayersPage() {
   );
 }
 
+function StreamsPage() {
+  const [activeStream, setActiveStream] = useState<number | null>(
+    STREAMS.find(s => s.status === 'live')?.id ?? null
+  );
+  const [filter, setFilter] = useState<'all' | 'live' | 'upcoming' | 'finished'>('all');
+
+  const filtered = filter === 'all' ? STREAMS : STREAMS.filter(s => s.status === filter);
+  const current = STREAMS.find(s => s.id === activeStream);
+
+  return (
+    <div>
+      <SectionHeader tag="Онлайн" title="Трансляции" sub="Смотрите матчи в прямом эфире" />
+
+      {/* Плеер активной трансляции */}
+      {current && (
+        <div className="mb-8">
+          <div className="arena-card rounded-xl overflow-hidden">
+            {current.status !== 'upcoming' && current.embedUrl ? (
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  src={current.embedUrl}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={current.title}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 gap-4"
+                style={{ background: 'rgba(255,255,255,0.02)' }}>
+                {current.status === 'upcoming' ? (
+                  <>
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center"
+                      style={{ background: 'rgba(245,168,0,0.1)' }}>
+                      <Icon name="Clock" size={32} style={{ color: '#f5a800' }} />
+                    </div>
+                    <div className="text-center">
+                      <div className="font-display font-bold text-white text-xl mb-1">Трансляция начнётся в {('startTime' in current) ? (current as { startTime?: string }).startTime : ''}</div>
+                      <div className="text-white/40 text-sm">{('date' in current) ? (current as { date?: string }).date : ''}</div>
+                    </div>
+                    <a href={current.youtubeUrl} target="_blank" rel="noopener noreferrer"
+                      className="btn-neon px-5 py-2.5 rounded-lg text-sm flex items-center gap-2">
+                      <Icon name="Bell" size={16} />
+                      Подписаться на канал
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center"
+                      style={{ background: 'rgba(255,255,255,0.05)' }}>
+                      <Icon name="Video" size={32} style={{ color: 'rgba(255,255,255,0.3)' }} />
+                    </div>
+                    <div className="text-white/40 text-sm">Запись недоступна</div>
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="p-4 flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <StatusBadge status={current.status} />
+                  {current.status === 'live' && (
+                    <span className="text-white/40 text-xs flex items-center gap-1">
+                      <Icon name="Eye" size={12} />
+                      {current.viewers} зрителей
+                    </span>
+                  )}
+                </div>
+                <div className="font-display font-bold text-white text-base">{current.match}</div>
+                <div className="text-white/40 text-xs mt-0.5">{current.tournament} · {current.age} · {current.channel}</div>
+              </div>
+              <a href={current.youtubeUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all hover:opacity-80"
+                style={{ background: '#ff0000', color: 'white' }}>
+                <Icon name="Youtube" size={16} />
+                YouTube
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Фильтр */}
+      <div className="flex gap-2 mb-5 flex-wrap">
+        {([['all', 'Все'], ['live', 'В эфире'], ['upcoming', 'Скоро'], ['finished', 'Записи']] as const).map(([val, label]) => (
+          <button key={val} onClick={() => setFilter(val)}
+            className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+            style={filter === val
+              ? { background: '#f5a800', color: '#07090f' }
+              : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            {label}
+            {val === 'live' && STREAMS.filter(s => s.status === 'live').length > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-xs"
+                style={{ background: '#ef4444', color: 'white', fontSize: '10px' }}>
+                {STREAMS.filter(s => s.status === 'live').length}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Список трансляций */}
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {filtered.map(stream => (
+          <div key={stream.id}
+            onClick={() => { setActiveStream(stream.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className={`arena-card rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.01] ${activeStream === stream.id ? 'ring-2' : ''}`}
+            style={activeStream === stream.id ? { '--tw-ring-color': '#f5a800', boxShadow: '0 0 0 2px #f5a800' } as React.CSSProperties : {}}>
+
+            {/* Превью */}
+            <div className="relative aspect-video flex items-center justify-center"
+              style={{ background: 'rgba(10,20,60,0.6)' }}>
+              <div className="text-5xl select-none">🏒</div>
+              {stream.status === 'live' && (
+                <div className="absolute top-2 left-2">
+                  <span className="live-badge px-2 py-0.5 rounded text-white text-xs flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse inline-block" />
+                    LIVE
+                  </span>
+                </div>
+              )}
+              {stream.status === 'live' && (
+                <div className="absolute top-2 right-2 flex items-center gap-1 text-white/70 text-xs"
+                  style={{ background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: 4 }}>
+                  <Icon name="Eye" size={11} />
+                  {stream.viewers}
+                </div>
+              )}
+              {stream.status !== 'live' && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ background: 'rgba(0,0,0,0.5)' }}>
+                    <Icon name={stream.status === 'upcoming' ? 'Clock' : 'Play'} size={22} style={{ color: 'white' }} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <StatusBadge status={stream.status} />
+                <span className="text-white/30 text-xs">{stream.age}</span>
+              </div>
+              <div className="font-bold text-white text-sm leading-snug mb-1">{stream.match}</div>
+              <div className="text-white/40 text-xs">{stream.channel}</div>
+              {(stream.status === 'finished' && 'date' in stream) && (
+                <div className="text-white/30 text-xs mt-1">{(stream as { date?: string }).date}</div>
+              )}
+              {(stream.status === 'upcoming' && 'startTime' in stream) && (
+                <div className="text-white/50 text-xs mt-1 font-bold" style={{ color: '#f5a800' }}>
+                  Начало в {(stream as { startTime?: string }).startTime}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function NewsPage() {
   return (
     <div>
@@ -832,6 +1033,7 @@ export default function App() {
       case 'standings': return <StandingsPage />;
       case 'teams': return <TeamsPage />;
       case 'players': return <PlayersPage />;
+      case 'streams': return <StreamsPage />;
       case 'news': return <NewsPage />;
       case 'about': return <AboutPage />;
       case 'contact': return <ContactPage />;
